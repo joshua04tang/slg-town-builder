@@ -7,10 +7,10 @@ export function createGameConfig(): Phaser.Types.Core.GameConfig {
     parent: 'game-container',
     backgroundColor: '#0f172a',
     scale: {
-      mode: Phaser.Scale.RESIZE,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 390,
+      height: 844,
     },
     scene: [MainScene],
     physics: {
