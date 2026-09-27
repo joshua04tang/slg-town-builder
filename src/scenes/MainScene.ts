@@ -57,29 +57,46 @@ export class MainScene extends Phaser.Scene {
     this.gridGraphics.clear();
     
     const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
+    const centerY = (this.scale.height - 80 - 80) / 2 + 80;
     const startX = centerX - (GRID_SIZE * (TILE_SIZE + TILE_SPACING)) / 2;
     const startY = centerY - (GRID_SIZE * (TILE_SIZE + TILE_SPACING)) / 2;
 
+    const state = this.gameState.getState();
+    
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
         const px = startX + x * (TILE_SIZE + TILE_SPACING);
         const py = startY + y * (TILE_SIZE + TILE_SPACING);
         
-        const isCenter = x === Math.floor(GRID_SIZE / 2) && y === Math.floor(GRID_SIZE / 2);
+        const hasBuilding = state.buildings.some(b => b.x === x && b.y === y);
         
-        this.gridGraphics.fillStyle(isCenter ? 0x4a5568 : 0x2d3748, 1);
+        if (hasBuilding) {
+          continue;
+        }
+        
+        this.gridGraphics.fillStyle(0x1e293b, 0.6);
         this.gridGraphics.fillRect(px, py, TILE_SIZE, TILE_SIZE);
         
-        this.gridGraphics.lineStyle(2, 0x1a202c, 1);
+        this.gridGraphics.lineStyle(2, 0x475569, 0.8);
         this.gridGraphics.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
+        
+        this.gridGraphics.lineStyle(2, 0x64748b, 0.5);
+        const centerPx = px + TILE_SIZE / 2;
+        const centerPy = py + TILE_SIZE / 2;
+        const crossSize = 15;
+        this.gridGraphics.beginPath();
+        this.gridGraphics.moveTo(centerPx - crossSize, centerPy);
+        this.gridGraphics.lineTo(centerPx + crossSize, centerPy);
+        this.gridGraphics.moveTo(centerPx, centerPy - crossSize);
+        this.gridGraphics.lineTo(centerPx, centerPy + crossSize);
+        this.gridGraphics.strokePath();
       }
     }
   }
 
   private getPlotPosition(x: number, y: number): { px: number; py: number } {
     const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
+    const centerY = (this.scale.height - 80 - 80) / 2 + 80;
     const startX = centerX - (GRID_SIZE * (TILE_SIZE + TILE_SPACING)) / 2;
     const startY = centerY - (GRID_SIZE * (TILE_SIZE + TILE_SPACING)) / 2;
     
@@ -91,7 +108,7 @@ export class MainScene extends Phaser.Scene {
 
   private getPlotFromPosition(worldX: number, worldY: number): { x: number; y: number } | null {
     const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
+    const centerY = (this.scale.height - 80 - 80) / 2 + 80;
     const startX = centerX - (GRID_SIZE * (TILE_SIZE + TILE_SPACING)) / 2;
     const startY = centerY - (GRID_SIZE * (TILE_SIZE + TILE_SPACING)) / 2;
     
@@ -109,6 +126,7 @@ export class MainScene extends Phaser.Scene {
     state.buildings.forEach(building => {
       this.createBuildingSprite(building);
     });
+    this.drawGrid();
   }
 
   private createBuildingSprite(building: PlacedBuilding): void {
@@ -227,9 +245,10 @@ export class MainScene extends Phaser.Scene {
       this.scale.width,
       barHeight,
       0x1f2937,
-      0.95
+      0.98
     );
-    this.uiContainer.add(bg);
+    bg.setScrollFactor(0);
+    bg.setDepth(1000);
     
     const resources = [
       { key: 'food', emoji: '🌾', color: '#10b981' },
@@ -238,67 +257,92 @@ export class MainScene extends Phaser.Scene {
       { key: 'electricity', emoji: '⚡', color: '#fbbf24' },
     ];
     
-    const startX = 20;
-    const spacing = (this.scale.width - 40) / resources.length;
+    const startX = 15;
+    const spacing = (this.scale.width - 30) / resources.length;
     
     resources.forEach((res, i) => {
       const x = startX + i * spacing;
       
-      const icon = this.add.text(x, 20, res.emoji, {
-        fontSize: '24px',
+      const icon = this.add.text(x, 25, res.emoji, {
+        fontSize: '20px',
       });
-      this.uiContainer.add(icon);
+      icon.setScrollFactor(0);
+      icon.setDepth(1001);
       
-      const text = this.add.text(x + 35, 20, '0', {
-        fontSize: '18px',
+      const text = this.add.text(x + 30, 25, '0', {
+        fontSize: '16px',
         color: res.color,
         fontStyle: 'bold',
       });
-      this.uiContainer.add(text);
+      text.setScrollFactor(0);
+      text.setDepth(1001);
       this.resourceTexts.set(res.key, text);
     });
+    
+    const bottomBarBg = this.add.rectangle(
+      this.scale.width / 2,
+      this.scale.height - 40,
+      this.scale.width,
+      80,
+      0x1f2937,
+      0.98
+    );
+    bottomBarBg.setScrollFactor(0);
+    bottomBarBg.setDepth(1000);
   }
 
   private createQuestButton(): void {
-    const btnX = this.scale.width - 70;
-    const btnY = 120;
+    const btnX = this.scale.width / 4;
+    const btnY = this.scale.height - 40;
     
-    const btn = this.add.rectangle(btnX, btnY, 60, 60, 0x3b82f6, 1);
+    const btn = this.add.rectangle(btnX, btnY, 70, 60, 0x3b82f6, 1);
     btn.setScrollFactor(0);
     btn.setDepth(1001);
-    btn.setStrokeStyle(3, 0xffffff);
+    btn.setStrokeStyle(2, 0xffffff);
     btn.setInteractive();
     btn.on('pointerdown', () => {
-      console.log('Quest button clicked!');
       this.toggleQuestPanel();
     });
     
-    const icon = this.add.text(btnX, btnY, '📋', {
-      fontSize: '32px',
+    const icon = this.add.text(btnX, btnY - 8, '📋', {
+      fontSize: '28px',
     }).setOrigin(0.5);
     icon.setScrollFactor(0);
     icon.setDepth(1002);
+    
+    const label = this.add.text(btnX, btnY + 18, '任務', {
+      fontSize: '12px',
+      color: '#ffffff',
+    }).setOrigin(0.5);
+    label.setScrollFactor(0);
+    label.setDepth(1002);
   }
 
   private createSettingsButton(): void {
-    const btnX = this.scale.width - 70;
-    const btnY = 200;
+    const btnX = (this.scale.width / 4) * 3;
+    const btnY = this.scale.height - 40;
     
-    const btn = this.add.rectangle(btnX, btnY, 60, 60, 0x6b7280, 1);
+    const btn = this.add.rectangle(btnX, btnY, 70, 60, 0x6b7280, 1);
     btn.setScrollFactor(0);
     btn.setDepth(1001);
-    btn.setStrokeStyle(3, 0xffffff);
+    btn.setStrokeStyle(2, 0xffffff);
     btn.setInteractive();
     btn.on('pointerdown', () => {
-      console.log('Settings button clicked!');
       this.toggleSettingsPanel();
     });
     
-    const icon = this.add.text(btnX, btnY, '⚙️', {
-      fontSize: '32px',
+    const icon = this.add.text(btnX, btnY - 8, '⚙️', {
+      fontSize: '28px',
     }).setOrigin(0.5);
     icon.setScrollFactor(0);
     icon.setDepth(1002);
+    
+    const label = this.add.text(btnX, btnY + 18, '設定', {
+      fontSize: '12px',
+      color: '#ffffff',
+    }).setOrigin(0.5);
+    label.setScrollFactor(0);
+    label.setDepth(1002);
   }
 
   private setupInput(): void {
@@ -317,7 +361,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   private onPointerDown(_pointer: Phaser.Input.Pointer): void {
-    if (this.input.pointer2.isDown) {
+    if (this.input.pointer1 && this.input.pointer2 && this.input.pointer2.isDown) {
       const distance = Phaser.Math.Distance.Between(
         this.input.pointer1.x,
         this.input.pointer1.y,
@@ -337,13 +381,13 @@ export class MainScene extends Phaser.Scene {
         this.isDragging = true;
       }
       
-      if (this.isDragging && !this.input.pointer2.isDown) {
+      if (this.isDragging && !(this.input.pointer2 && this.input.pointer2.isDown)) {
         this.camera.scrollX -= (pointer.x - pointer.prevPosition.x) / this.camera.zoom;
         this.camera.scrollY -= (pointer.y - pointer.prevPosition.y) / this.camera.zoom;
       }
     }
     
-    if (this.input.pointer1.isDown && this.input.pointer2.isDown) {
+    if (this.input.pointer1 && this.input.pointer2 && this.input.pointer1.isDown && this.input.pointer2.isDown) {
       const distance = Phaser.Math.Distance.Between(
         this.input.pointer1.x,
         this.input.pointer1.y,
@@ -394,7 +438,6 @@ export class MainScene extends Phaser.Scene {
   }
 
   private onBuildingClick(building: PlacedBuilding): void {
-    console.log('Building clicked:', building.type, building.id);
     this.showBuildingInfo(building);
   }
 
@@ -486,6 +529,7 @@ export class MainScene extends Phaser.Scene {
       );
       if (building) {
         this.createBuildingSprite(building);
+        this.drawGrid();
       }
       this.closeBuildMenu();
       this.selectedPlot = null;
@@ -510,10 +554,14 @@ export class MainScene extends Phaser.Scene {
     
     this.buildingInfoPanel = this.add.container(menuX, menuY);
     this.buildingInfoPanel.setScrollFactor(0);
-    this.buildingInfoPanel.setDepth(2000);
+    this.buildingInfoPanel.setDepth(3000);
     
     const bg = this.add.rectangle(0, 0, menuWidth, menuHeight, 0x1f2937, 0.98);
     bg.setStrokeStyle(3, 0x3b82f6);
+    bg.setInteractive(new Phaser.Geom.Rectangle(-menuWidth/2, -menuHeight/2, menuWidth, menuHeight), Phaser.Geom.Rectangle.Contains);
+    bg.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.event) pointer.event.stopPropagation();
+    });
     this.buildingInfoPanel.add(bg);
     
     const data = buildingsData[building.type];
@@ -530,7 +578,10 @@ export class MainScene extends Phaser.Scene {
       color: '#ffffff',
     }).setOrigin(0.5);
     closeBtn.setInteractive();
-    closeBtn.on('pointerdown', () => this.closeBuildingInfo());
+    closeBtn.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.event) pointer.event.stopPropagation();
+      this.closeBuildingInfo();
+    });
     this.buildingInfoPanel.add(closeBtn);
     
     let yOffset = -menuHeight / 2 + 80;
@@ -951,10 +1002,6 @@ export class MainScene extends Phaser.Scene {
         building.accumulatedResources += productionPerSecond;
       }
     });
-    
-    if (this.buildingInfoPanel) {
-      this.closeBuildingInfo();
-    }
   }
 
   update(): void {

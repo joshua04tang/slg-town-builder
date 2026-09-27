@@ -52,7 +52,7 @@ export class GameState {
         completed: false,
         claimed: false,
         reward: { food: 200, wood: 200, steel: 0, electricity: 0 },
-        checkComplete: (state) => state.buildings.some(b => b.type === 'farm'),
+        checkComplete: (state) => state.buildings.some(b => b.type === 'farm' && b.level >= 1 && !b.isBuilding),
       },
       {
         id: 'quest2',
@@ -82,7 +82,7 @@ export class GameState {
         completed: false,
         claimed: false,
         reward: { food: 400, wood: 400, steel: 50, electricity: 0 },
-        checkComplete: (state) => state.buildings.some(b => b.type === 'lumberMill'),
+        checkComplete: (state) => state.buildings.some(b => b.type === 'lumberMill' && b.level >= 1 && !b.isBuilding),
       },
       {
         id: 'quest5',
@@ -91,7 +91,7 @@ export class GameState {
         completed: false,
         claimed: false,
         reward: { food: 600, wood: 600, steel: 200, electricity: 0 },
-        checkComplete: (state) => state.buildings.some(b => b.type === 'steelMine'),
+        checkComplete: (state) => state.buildings.some(b => b.type === 'steelMine' && b.level >= 1 && !b.isBuilding),
       },
     ];
   }
