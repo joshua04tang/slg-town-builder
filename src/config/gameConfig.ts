@@ -1,18 +1,18 @@
 import Phaser from 'phaser';
-import { MainScene } from '../scenes/MainScene';
+import { SpaceMainScene } from '../scenes/SpaceMainScene';
 
 export function createGameConfig(): Phaser.Types.Core.GameConfig {
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'game-container',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#000000',
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
       width: 390,
       height: 844,
     },
-    scene: [MainScene],
+    scene: [SpaceMainScene],
     physics: {
       default: 'arcade',
       arcade: {

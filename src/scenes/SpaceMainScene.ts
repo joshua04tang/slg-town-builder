@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { SpaceGameState } from '../state/SpaceGameState';
 import { spaceRooms } from '../config/spaceRooms';
 import { spaceStrings } from '../config/spaceStrings';
-import { PlacedRoom, RoomType, SpaceResources, RoomCost } from '../spaceTypes';
+import { PlacedRoom, RoomType, RoomCost } from '../spaceTypes';
 
 const GRID_SIZE = 5;
 const TILE_SIZE = 100;
@@ -74,26 +74,23 @@ export class SpaceMainScene extends Phaser.Scene {
     skipBtn.on('pointerdown', () => this.skipIntro());
     this.introSequence.add(skipBtn);
 
-    const timeline = this.tweens.createTimeline();
-
     const distantShips = this.add.text(centerX, centerY, '✦ ✦ ✦', {
       fontSize: '24px',
       color: '#ffffff',
     }).setOrigin(0.5).setAlpha(0);
     this.introSequence.add(distantShips);
 
-    timeline.add({
+    this.tweens.add({
       targets: distantShips,
       alpha: { from: 0, to: 1 },
       duration: 2000,
       hold: 2000,
-    });
-
-    timeline.add({
-      targets: distantShips,
-      alpha: 0,
-      duration: 1000,
       onComplete: () => {
+        this.tweens.add({
+          targets: distantShips,
+          alpha: 0,
+          duration: 1000,
+          onComplete: () => {
         const oneShip = this.add.text(centerX, centerY, '🚀', {
           fontSize: '48px',
         }).setOrigin(0.5).setAlpha(0);
@@ -160,10 +157,10 @@ export class SpaceMainScene extends Phaser.Scene {
             });
           },
         });
+          },
+        });
       },
     });
-
-    timeline.play();
   }
 
   private skipIntro(): void {
